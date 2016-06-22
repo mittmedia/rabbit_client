@@ -18,7 +18,8 @@ module RabbitClient
           RabbitClient.logger.debug do
             "Publishing message to exchange #{exchange_name}: #{message}"
           end
-          exchange.publish message.to_json
+          message = message.to_json if opts[:format] == :json
+          exchange.publish message
         end
         RabbitClient.logger.info do
           "Published #{messages.size} messages to exchange #{exchange_name}"
