@@ -1,42 +1,27 @@
-require 'bunny'
+require 'rabbit_client/bunny_client'
 
 module RabbitClient
   module Publisher
     def self.publish_messages(url, exchange_name, messages, opts = {})
-      messages = [messages] unless messages.is_a? Array
-      connection = Bunny.new url
-      begin
-        connection.start
-        channel = connection.create_channel
-        exchange = create_exchange channel,
+      count = messages.is_a?(Array) ? messages.size : 1
+      RabbitClient.logger.info { "Publishing #{count} messages to exchange #{exchange_name}" }
+      BunnyClient.publish_messages url,
                                    exchange_name,
-                                   opts[:exchange_type]
-        RabbitClient.logger.info do
-          "Publishing #{messages.size} messages to exchange #{exchange_name}"
-        end
-        messages.each do |message|
-          RabbitClient.logger.debug do
-            "Publishing message to exchange #{exchange_name}: #{message}"
-          end
-          message = message.to_json if opts[:format] == :json
-          exchange.publish message
-        end
-        RabbitClient.logger.info do
-          "Published #{messages.size} messages to exchange #{exchange_name}"
-        end
-      ensure
-        connection.close
+                                   opts[:exchange_type],
+                                   messages do |message|
+        RabbitClient.logger.debug { "Publishing message to exchange #{exchange_name}: #{message}" }
+        format_message message, opts[:format]
       end
     end
 
-    def self.create_exchange(channel, name, type)
-      case type
-      when :topic
-        channel.topic name, durable: true
+    def self.format_message(message, format)
+      case format
+      when :json
+        message.to_json
       else
-        channel.fanout name, durable: true
+        message
       end
     end
-    private_class_method :create_exchange
+    private_class_method :format_message
   end
 end

@@ -1,5 +1,7 @@
 require 'sneakers'
 require 'rabbit_client/publisher'
+require 'rabbit_client/listener'
+require 'rabbit_client/metadata_helper'
 
 module RabbitClient
   class Consumer
@@ -28,7 +30,7 @@ module RabbitClient
       ack!
     rescue => e
       log_error e, message
-      retries = retry_count metadata[:headers]
+      retries = retry_count metadata
       if retries < self.class.max_retries
         tries_left = self.class.max_retries - retries
         RabbitClient.logger.info { "Retrying message #{tries_left} more times" }
@@ -42,10 +44,8 @@ module RabbitClient
 
     private
 
-    def retry_count(headers)
-      return 0 unless headers && headers['x-death']
-      header = headers['x-death']
-      header.find { |h| h['exchange'] == "#{self.class.queue_name}-retry" }['count']
+    def retry_count(metadata)
+      MetadataHelper.retry_count metadata, self.class.queue_name
     end
 
     def publish_error(message)
