@@ -31,7 +31,7 @@ module RabbitClient
     rescue => e
       log_error e, message
       retries = retry_count metadata
-      if retries < self.class.max_retries
+      if Listener.retry_messages? && retries < self.class.max_retries
         tries_left = self.class.max_retries - retries
         RabbitClient.logger.info { "Retrying message #{tries_left} more times" }
         reject!
@@ -49,10 +49,11 @@ module RabbitClient
     end
 
     def publish_error(message)
-      RabbitClient::Publisher.publish_messages RabbitClient::Listener.listen_url,
-                                               "#{self.class.queue_name}-error",
-                                               message,
-                                               exchange_type: :topic
+      return unless Listener.retry_messages?
+      Publisher.publish_messages Listener.listen_url,
+                                 "#{self.class.queue_name}-error",
+                                 message,
+                                 exchange_type: :topic
     end
 
     def log_error(e, message)

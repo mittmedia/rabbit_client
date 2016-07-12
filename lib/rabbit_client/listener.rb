@@ -6,14 +6,18 @@ module RabbitClient
   module Listener
     def self.configure(opts)
       @listen_url = opts[:listen_url]
-      Sneakers.configure amqp: @listen_url,
-                         daemonize: false,
-                         log: RabbitClient.logger,
-                         workers: opts[:workers] || 1,
-                         prefetch: opts[:prefetch] || 1,
-                         threads: opts[:threads] || 1,
-                         handler: Sneakers::Handlers::Maxretry,
-                         retry_timeout: opts[:retry_timeout] || 60 * 1000
+      @retry_messages = opts[:retry_messages] == false ? false : true
+      opts = {
+        amqp: @listen_url,
+        daemonize: false,
+        log: RabbitClient.logger,
+        workers: opts[:workers] || 1,
+        prefetch: opts[:prefetch] || 1,
+        threads: opts[:threads] || 1,
+        retry_timeout: opts[:retry_timeout] || 60 * 1000
+      }
+      opts[:handler] = Sneakers::Handlers::Maxretry if @retry_messages
+      Sneakers.configure opts
     end
 
     def self.listen(consumers)
@@ -24,6 +28,10 @@ module RabbitClient
 
     def self.listen_url
       @listen_url
+    end
+
+    def self.retry_messages?
+      @retry_messages
     end
   end
 end

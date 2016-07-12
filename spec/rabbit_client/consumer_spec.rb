@@ -39,6 +39,22 @@ describe RabbitClient::Consumer do
       @consumer.work_with_params message, nil, {}
     end
 
+    it 'handles errors if not retrying' do
+      message = 'message'
+      allow(RabbitClient::Listener)
+        .to(receive(:retry_messages?))
+        .and_return false
+      expect(@consumer)
+        .to(receive(:consume))
+        .and_raise 'error'
+      expect(@consumer)
+        .to(receive(:handle_error))
+        .with instance_of(RuntimeError), message
+      expect(RabbitClient::Publisher)
+        .not_to receive :publish_messages
+      @consumer.work_with_params message, nil, {}
+    end
+
     it 'retries messages when retry count is below limit' do
       setup_retry_count 0
       expect(@consumer)
@@ -52,6 +68,9 @@ describe RabbitClient::Consumer do
 end
 
 def setup_retry_count(count)
+  allow(RabbitClient::Listener)
+    .to(receive(:retry_messages?))
+    .and_return true
   expect(RabbitClient::MetadataHelper)
     .to(receive(:retry_count))
     .and_return count
