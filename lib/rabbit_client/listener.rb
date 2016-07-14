@@ -5,9 +5,9 @@ require 'rabbit_client'
 module RabbitClient
   module Listener
     def self.configure(opts)
-      @listen_url = opts[:listen_url]
-      @retry_messages = opts[:retry_messages] == false ? false : true
       sneakers_opts = build_opts opts
+      @listen_url = sneakers_opts[:listen_url]
+      @retry_messages = sneakers_opts[:retry_messages]
       Sneakers.configure sneakers_opts
     end
 
@@ -26,8 +26,9 @@ module RabbitClient
     end
 
     def self.build_opts(opts)
-      default_opts[:handler] = Sneakers::Handlers::Maxretry if @retry_messages
-      default_opts[:amqp] = @listen_url
+      retry_messages = opts[:retry_messages] == false ? false : true
+      opts[:handler] = Sneakers::Handlers::Maxretry if retry_messages
+      opts[:amqp] = opts[:listen_url]
       default_opts.merge opts
     end
     private_class_method :build_opts
