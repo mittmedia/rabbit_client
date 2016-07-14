@@ -35,7 +35,6 @@ module RabbitClient
 
     def self.default_opts
       {
-        daemonize: false,
         log: RabbitClient.logger,
         workers: 1,
         prefetch: 1,
