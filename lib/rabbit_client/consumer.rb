@@ -16,7 +16,7 @@ module RabbitClient
         configuration = {
           exchange: opts[:exchange],
           exchange_type: opts[:exchange_type] || 'fanout',
-          hearbeat: opts[:heartbeat] || 120,
+          heartbeat: opts[:heartbeat] || 60,
           arguments: { :'x-dead-letter-exchange' => "#{@queue_name}-retry" }
         }
         configuration[:metrics] = opts[:metrics] if opts[:metrics]
