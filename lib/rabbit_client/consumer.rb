@@ -8,11 +8,10 @@ module RabbitClient
     include Sneakers::Worker
 
     class << self
-      attr_reader :queue_name, :max_retries
+      attr_reader :queue_name
 
       def configure(opts)
         @queue_name = opts[:queue]
-        @max_retries = opts[:max_retries] || 5
         configuration = {
           exchange: opts[:exchange],
           exchange_type: opts[:exchange_type] || 'fanout',
@@ -31,8 +30,8 @@ module RabbitClient
     rescue => e
       log_error e, message
       retries = retry_count metadata
-      if Listener.retry_messages? && retries < self.class.max_retries
-        tries_left = self.class.max_retries - retries
+      if Listener.retry_messages? && retries < max_retries
+        tries_left = max_retries - retries
         RabbitClient.logger.info { "Retrying message #{tries_left} more times" }
         reject!
       else
@@ -43,6 +42,10 @@ module RabbitClient
     end
 
     private
+
+    def max_retries
+      Listener.max_retries
+    end
 
     def retry_count(metadata)
       MetadataHelper.retry_count metadata, self.class.queue_name

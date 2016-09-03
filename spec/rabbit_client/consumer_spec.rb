@@ -5,10 +5,6 @@ Consumer = Class.new RabbitClient::Consumer do
   def consume; end
 
   def handle_error; end
-
-  def self.max_retries
-    5
-  end
 end
 
 describe RabbitClient::Consumer do
@@ -74,4 +70,7 @@ def setup_retry_count(count)
   expect(RabbitClient::MetadataHelper)
     .to(receive(:retry_count))
     .and_return count
+  allow(RabbitClient::Listener)
+    .to(receive(:max_retries))
+    .and_return 5
 end

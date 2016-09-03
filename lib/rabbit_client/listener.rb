@@ -8,6 +8,7 @@ module RabbitClient
       sneakers_opts = build_opts opts
       @listen_url = sneakers_opts[:listen_url]
       @retry_messages = sneakers_opts[:retry_messages]
+      @max_retries = sneakers_opts[:retry_max_times]
       Sneakers.configure sneakers_opts
     end
 
@@ -25,6 +26,10 @@ module RabbitClient
       @retry_messages
     end
 
+    def self.max_retries
+      @max_retries
+    end
+
     def self.build_opts(opts)
       retry_messages = opts[:retry_messages] == false ? false : true
       opts[:retry_messages] = retry_messages
@@ -40,7 +45,8 @@ module RabbitClient
         workers: 1,
         prefetch: 1,
         threads: 1,
-        retry_timeout: 60 * 1000
+        retry_timeout: 60 * 1000,
+        retry_max_times: 5
       }
     end
     private_class_method :default_opts
