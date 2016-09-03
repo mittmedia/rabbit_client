@@ -13,6 +13,7 @@ describe RabbitClient::Listener do
       sneakers_opts = { handler: Sneakers::Handlers::Maxretry }
       mock_configure hash_including(sneakers_opts)
       RabbitClient::Listener.configure listen_url: 'listen_url'
+      expect(RabbitClient::Listener.retry_messages?).to eq true
     end
 
     it "doesn't use a Maxretry handler if not retrying messages" do

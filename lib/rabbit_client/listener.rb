@@ -27,6 +27,7 @@ module RabbitClient
 
     def self.build_opts(opts)
       retry_messages = opts[:retry_messages] == false ? false : true
+      opts[:retry_messages] = retry_messages
       opts[:handler] = Sneakers::Handlers::Maxretry if retry_messages
       opts[:amqp] = opts[:listen_url]
       default_opts.merge opts
