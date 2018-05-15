@@ -10,6 +10,32 @@ module RabbitClient
       end
     end
 
+    def self.publish_message(url, exchange_name, exchange_type, message, routing_key, batch)
+      connect url, exchange_name, exchange_type do |exchange|
+
+
+        current_time = Time.now.getutc
+        organization = message.organization
+
+        message_headers = {}
+
+        message_headers[:routing_key] = routing_key
+        message_headers[:organization] = organization
+        message_headers[:batch] = batch
+
+        message.extra_properties.each do |name, value|
+          message_headers[name] = value
+        end
+
+        exchange.publish(message.body.to_json,
+                         headers: message_headers,
+                         routing_key: routing_key,
+                         timestamp: current_time.to_i,
+                         content_type: 'application/json',
+                         type: message.type)
+      end
+    end
+
     def self.connect(url, exchange_name, exchange_type)
       connection = Bunny.new url
       connection.start
@@ -27,6 +53,10 @@ module RabbitClient
       case type
       when :topic
         channel.topic name, durable: true
+      when :direct
+        channel.direct name, durable: true
+      when :headers
+        channel.headers name, durable: true
       else
         channel.fanout name, durable: true
       end

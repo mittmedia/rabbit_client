@@ -13,10 +13,10 @@ module RabbitClient
       def configure(opts)
         @queue_name = opts[:queue]
         configuration = {
-          exchange: opts[:exchange],
-          exchange_type: opts[:exchange_type] || 'fanout',
-          heartbeat: opts[:heartbeat] || 60,
-          arguments: { :'x-dead-letter-exchange' => "#{@queue_name}-retry" }
+        exchange: opts[:exchange],
+        exchange_type: opts[:exchange_type] || 'fanout',
+        heartbeat: opts[:heartbeat] || 60,
+        arguments: { :'x-dead-letter-exchange' => "#{@queue_name}-retry" }
         }
         configuration[:metrics] = opts[:metrics] if opts[:metrics]
         from_queue @queue_name, configuration
@@ -29,16 +29,21 @@ module RabbitClient
       ack!
     rescue => e
       log_error e, message
-      retries = retry_count metadata
-      if Listener.retry_messages? && retries < max_retries
-        tries_left = max_retries - retries
-        RabbitClient.logger.info { "Retrying message #{tries_left} more times" }
-        reject!
+      if ENV.fetch('RUBY_ENV') != 'development'
+        retries = retry_count metadata
+        if Listener.retry_messages? && retries < max_retries
+          tries_left = max_retries - retries
+          RabbitClient.logger.info { "Retrying message #{tries_left} more times" }
+          reject!
+        else
+          handle_error e, message if defined? handle_error
+          publish_error message
+          ack!
+        end
       else
-        handle_error e, message if defined? handle_error
-        publish_error message
         ack!
       end
+
     end
 
     private
