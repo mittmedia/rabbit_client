@@ -29,7 +29,7 @@ module RabbitClient
       ack!
     rescue => e
       log_error e, message
-      if ENV.fetch('RUBY_ENV') != 'development'
+      if ENV.fetch('RUBY_ENV') { 'production' } != 'development'
         retries = retry_count metadata
         if Listener.retry_messages? && retries < max_retries
           tries_left = max_retries - retries
