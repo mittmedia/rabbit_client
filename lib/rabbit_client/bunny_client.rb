@@ -10,7 +10,7 @@ module RabbitClient
       end
     end
 
-    def self.publish_message(url, exchange_name, exchange_type, message, routing_key, batch)
+    def self.publish_message(url, exchange_name, exchange_type, message, routing_key, batch, origin)
       connect url, exchange_name, exchange_type do |exchange|
 
         current_time = Time.now.getutc
@@ -21,6 +21,7 @@ module RabbitClient
         message_headers[:routing_key] = routing_key
         message_headers[:organization] = organization
         message_headers[:batch] = batch
+        message_headers[:timestamp] = current_time.to_s
 
         message.extra_properties.each do |name, value|
           message_headers[name] = value
@@ -31,7 +32,9 @@ module RabbitClient
                          routing_key: routing_key,
                          timestamp: current_time.to_i,
                          content_type: 'application/json',
-                         type: message.type)
+                         content_encoding: 'UTF-8',
+                         type: message.type,
+                         app_id: origin)
       end
     end
 

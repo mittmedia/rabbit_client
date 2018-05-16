@@ -14,13 +14,13 @@ module RabbitClient
       end
     end
 
-    def self.publish_message(url, exchange_name, exchange_type,routing_key, batch, message, opts = {})
+    def self.publish_message(url, exchange_name, exchange_type,routing_key, batch, origin, message, opts = {})
       RabbitClient.logger.info { "Publishing message to exchange #{exchange_name}" }
       BunnyClient.publish_message url,
                                    exchange_name,
                                    exchange_type,
                                    message,
-                                    routing_key, batch do |message|
+                                    routing_key, batch, origin do |message|
         RabbitClient.logger.debug { "Publishing message to exchange #{exchange_name}: #{message}" }
         format_message message, opts[:format]
       end
