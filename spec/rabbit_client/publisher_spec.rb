@@ -59,7 +59,6 @@ describe RabbitClient::Publisher do
                                                exchange_type: exchange_type
     end
 
-
     it 'formats messages as JSON before publishing' do
       message = 'message'
       expect(RabbitClient::BunnyClient)
