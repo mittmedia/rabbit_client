@@ -13,10 +13,10 @@ module RabbitClient
       def configure(opts)
         @queue_name = opts[:queue]
         configuration = {
-        exchange: opts[:exchange],
-        exchange_type: opts[:exchange_type] || 'fanout',
-        heartbeat: opts[:heartbeat] || 60,
-        arguments: { :'x-dead-letter-exchange' => "#{@queue_name}-retry" }
+          exchange: opts[:exchange],
+          exchange_type: opts[:exchange_type] || 'fanout',
+          heartbeat: opts[:heartbeat] || 60,
+          arguments: { :'x-dead-letter-exchange' => "#{@queue_name}-retry" }
         }
         configuration[:metrics] = opts[:metrics] if opts[:metrics]
         from_queue @queue_name, configuration

@@ -45,10 +45,10 @@ describe RabbitClient::Publisher do
                                                exchange_type: exchange_type
     end
 
-    it 'publishes messages to exchange to topic' do
+    it 'publishes messages to exchange to headers' do
       url = 'localhost'
       exchange = 'test.fxout'
-      exchange_type = :topic
+      exchange_type = :headers
       messages = %w(message1 message2)
       expect(RabbitClient::BunnyClient)
       .to(receive(:publish_messages))

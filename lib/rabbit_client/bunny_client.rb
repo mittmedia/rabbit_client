@@ -10,7 +10,7 @@ module RabbitClient
       end
     end
 
-    def self.publish_message(url, exchange_name, exchange_type, message, routing_key, batch, origin)
+    def self.publish_message(url: url, exchange_name: exchange_name, exchange_type: exchange_type, message: message, routing_key: routing_key, batch: batch, origin: origin)
       connect url, exchange_name, exchange_type do |exchange|
 
         current_time = Time.now.getutc
