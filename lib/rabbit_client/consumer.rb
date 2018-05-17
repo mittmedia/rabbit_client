@@ -29,16 +29,21 @@ module RabbitClient
       ack!
     rescue => e
       log_error e, message
-      retries = retry_count metadata
-      if Listener.retry_messages? && retries < max_retries
-        tries_left = max_retries - retries
-        RabbitClient.logger.info { "Retrying message #{tries_left} more times" }
-        reject!
+      if ENV.fetch('RUBY_ENV') { 'production' } != 'development'
+        retries = retry_count metadata
+        if Listener.retry_messages? && retries < max_retries
+          tries_left = max_retries - retries
+          RabbitClient.logger.info { "Retrying message #{tries_left} more times" }
+          reject!
+        else
+          handle_error e, message if defined? handle_error
+          publish_error message
+          ack!
+        end
       else
-        handle_error e, message if defined? handle_error
-        publish_error message
         ack!
       end
+
     end
 
     private
