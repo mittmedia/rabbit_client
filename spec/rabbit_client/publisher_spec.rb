@@ -63,10 +63,10 @@ describe RabbitClient::Publisher do
     it 'formats messages as JSON before publishing' do
       message = 'message'
       expect(RabbitClient::BunnyClient)
-      .to(receive(:publish_messages))
-      .and_yield message
+        .to(receive(:publish_messages))
+        .and_yield message
       expect(message)
-      .to receive :to_json
+        .to receive :to_json
       RabbitClient::Publisher.publish_messages 'localhost',
                                                'test.fxout',
                                                message,
