@@ -14,9 +14,7 @@ module RabbitClient
       end
     end
 
-    def self.publish_message(url: url, exchange_name: exchange_name,
-                             exchange_type: exchange_type,routing_key: routing_key,
-                             batch: batch, origin: origin, message: message)
+    def self.publish_message(url:, exchange_name:, exchange_type:,routing_key:, batch:, origin:, message:)
       RabbitClient.logger.info { "Publishing message to exchange #{exchange_name}" }
       BunnyClient.publish_message url: url,
                                   exchange_name: exchange_name,
